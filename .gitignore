@@ -1,0 +1,9 @@
+/log/
+/lib/
+.idea
+*.pyc
+/gen-py
+vendor
+*.log
+/src/service_*
+/config.ini

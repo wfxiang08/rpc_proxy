@@ -1,0 +1,18 @@
+package: .
+import:
+- package: github.com/wfxiang08/cyutils
+  subpackages:
+  - utils
+  - utils/atomic2
+  - utils/errors
+  - utils/rolling_log
+- package: github.com/c4pt0r/cfg
+- package: github.com/docopt/docopt-go
+- package: github.com/fatih/color
+- package: github.com/ngaut/logging
+- package: github.com/wfxiang08/go_thrift
+- package: github.com/wfxiang08/thrift_rpc_base
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert

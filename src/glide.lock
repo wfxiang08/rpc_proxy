@@ -1,0 +1,72 @@
+hash: 50ed17b94589c2be6ad3d92ed2746f64b7f84b2916b8818820dcedcaa9106405
+updated: 2017-06-30T19:05:49.849819011+08:00
+imports:
+- name: github.com/c4pt0r/cfg
+  version: 429e6985f0b07bceaa33b57ee612fbca4797a9a6
+- name: github.com/coreos/etcd
+  version: 9ca7f22e84f58deb40ea0de78b350c0fe3eaf77b
+  subpackages:
+  - error
+- name: github.com/coreos/go-etcd
+  version: 003851be7bb0694fe3cc457a49529a19388ee7cf
+  subpackages:
+  - etcd
+- name: github.com/docopt/docopt-go
+  version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/fatih/color
+  version: 34e4ee095d12986a2cef5ddb9aeb3b8cfcfea17c
+- name: github.com/mattn/go-colorable
+  version: ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8
+- name: github.com/mattn/go-isatty
+  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
+- name: github.com/ngaut/log
+  version: cec23d3e10b016363780d894a0eb732a12c06e02
+- name: github.com/ngaut/logging
+  version: f98f5f4cd523647678af6f1726c5b5a14c9193d0
+- name: github.com/ngaut/pools
+  version: 6352e005618615ffaf1cb1c6622b8e91435751fe
+- name: github.com/ngaut/sync2
+  version: 7a24ed77b2efb460c1468b7dc917821c66e80e55
+- name: github.com/ugorji/go
+  version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
+  subpackages:
+  - codec
+- name: github.com/wfxiang08/cyutils
+  version: dfb8bc2b5402cb534e3f53cbd9fc3897820f7b07
+  subpackages:
+  - utils
+  - utils/atomic2
+  - utils/errors
+  - utils/rolling_log
+  - utils/trace
+- name: github.com/wfxiang08/go-zookeeper
+  version: e0fd52de7ea0f5b19eb29ad9fe2aa509414a4522
+  subpackages:
+  - zk
+- name: github.com/wfxiang08/go_thrift
+  version: a20c9e7b36a5ce2ff784c397d0e9b85b55b496c7
+  subpackages:
+  - thrift
+- name: github.com/wfxiang08/thrift_rpc_base
+  version: f50df074809ff2c97782d61ba601049e4db6282b
+  subpackages:
+  - rpc_thrift
+  - rpc_utils
+  - zkhelper
+- name: golang.org/x/sys
+  version: e48874b42435b4347fc52bdee0424a52abc974d7
+  subpackages:
+  - unix
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 6cb3b85ef5a0efef77caef88363ec4d4b5c0976d
+  subpackages:
+  - assert

@@ -1,0 +1,12 @@
+[Unit]
+Description=rpc_proxy test version
+After=network.target
+
+[Service]
+ExecStart=/usr/local/rpc_proxy/bin/rpc_proxy -c /usr/local/rpc_proxy/config.test.ini -L /usr/local/rpc_proxy/log/proxy-test.log
+
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
