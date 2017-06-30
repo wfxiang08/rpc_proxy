@@ -4,8 +4,8 @@ package proxy
 
 import (
 	"fmt"
-	log "github.com/wfxiang08/cyutils/utils/rolling_log"
 	"github.com/docopt/docopt-go"
+	log "github.com/wfxiang08/cyutils/utils/rolling_log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -89,7 +89,7 @@ func RpcMain(binaryName string, serviceDesc string, configCheck ConfigCheck,
 		workDir, _ = os.Getwd()
 	}
 
-	log.Printf("WorkDir: %s, CodeUrl: %s, Wd: %s", workDir, codeUrlVersion)
+	log.Printf("WorkDir: %s, CodeUrl: %s", workDir, codeUrlVersion)
 
 	// 3. 解析Config
 	configFile := args["-c"].(string)
