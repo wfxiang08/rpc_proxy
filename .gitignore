@@ -6,4 +6,4 @@
 vendor
 *.log
 /src/service_*
-/config.ini
+/src/config.ini
