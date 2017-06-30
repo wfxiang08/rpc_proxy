@@ -7,7 +7,7 @@ mkdir -p ${BASE_DIR}log
 
 cd ${BASE_DIR}
 
-app=${BASE_DIR}bin/rpc_proxy
+app=${BASE_DIR}bin/service_rpc_proxy
 conf=${BASE_DIR}config.ini
 
 logfile=${BASE_DIR}log/proxy.log

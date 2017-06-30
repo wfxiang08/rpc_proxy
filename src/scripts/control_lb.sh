@@ -12,7 +12,7 @@ stdfile=log/app_lb.log
 
 
 BASE_DIR=/usr/local/rpc_proxy/
-app=${BASE_DIR}bin/rpc_lb
+app=${BASE_DIR}bin/service_rpc_lb
 
 
 function check_pid() {
