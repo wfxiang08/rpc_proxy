@@ -1,21 +1,11 @@
 # RPC Proxy
 ## 开发环境
 * 工作目录: 约定使用 `~/goprojects/`
-	* mkdir -p rpc_proxy/src/git.chunyu.me/infra/
-	* cd `rpc_proxy/src/git.chunyu.me/infra/`
-	* git clone git@git.chunyu.me:infra/rpc_proxy.git
-* IDE(`Pycharm + Go plugin`)
-	* https://github.com/go-lang-plugin-org/go-lang-idea-plugin
-	* 在最新的Pycharm中安装:
-		* https://plugins.jetbrains.com/plugin/5047 (版本: 0.9.748)
-    * 配置:
-	    * 在Pycharm的 Preferences 中选择:
-		    * Languages & Frameworks
-		    * 选择go
-		    * 设置Go SDK(设置GORoot)
-		    * 选择Go Libraries, 选择Global Libraries(忽略), 使用Project libraries)
-			    * 输入`source start_env.sh`脚本中输出的地址，例如:
-				    * /Users/feiwang/goprojects/rpc_proxy
+	* git clone https://github.com/wfxiang08/rpc_proxy.git
+	* cd rpc_proxy/src
+	* source start_env.sh
+    * 加速编译:
+	    * bash rebuild_vendor.sh
 
 # 基于Thrift的RPC Proxy
 相关的子项目:
@@ -158,7 +148,7 @@ s.connect(endpoint)
 s.run()
 ```
 ## 系统架构
-![architecture](doc/rpc_architecture.jpg)
+![architecture](src/doc/rpc_architecture.jpg)
 ## 运维部署
 * 编译:
 	* cd ~/goprojects/rpc_proxy/src/git.chunyu.me/infra/rpc_proxy
