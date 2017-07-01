@@ -1,10 +1,10 @@
 hash: 50ed17b94589c2be6ad3d92ed2746f64b7f84b2916b8818820dcedcaa9106405
-updated: 2017-06-30T19:05:49.849819011+08:00
+updated: 2017-07-01T14:50:53.008831835Z
 imports:
 - name: github.com/c4pt0r/cfg
   version: 429e6985f0b07bceaa33b57ee612fbca4797a9a6
 - name: github.com/coreos/etcd
-  version: 9ca7f22e84f58deb40ea0de78b350c0fe3eaf77b
+  version: 1408b337b67d4cb8355b3666b7eb8aaefbbfc167
   subpackages:
   - error
 - name: github.com/coreos/go-etcd
@@ -14,13 +14,15 @@ imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/fatih/color
-  version: 34e4ee095d12986a2cef5ddb9aeb3b8cfcfea17c
+  version: 62e9147c64a1ed519147b62a56a14e83e2be02c1
 - name: github.com/mattn/go-colorable
-  version: ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8
+  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
+  repo: https://github.com/mattn/go-colorable
 - name: github.com/mattn/go-isatty
-  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
+  version: 57fdcb988a5c543893cc61bce354a6e24ab70022
+  repo: https://github.com/mattn/go-isatty
 - name: github.com/ngaut/log
-  version: cec23d3e10b016363780d894a0eb732a12c06e02
+  version: d2af3a61f64d093457fb23b25d20f4ce3cd551ce
 - name: github.com/ngaut/logging
   version: f98f5f4cd523647678af6f1726c5b5a14c9193d0
 - name: github.com/ngaut/pools
@@ -40,7 +42,7 @@ imports:
   - utils/rolling_log
   - utils/trace
 - name: github.com/wfxiang08/go-zookeeper
-  version: e0fd52de7ea0f5b19eb29ad9fe2aa509414a4522
+  version: 184aa014b12119755d0eea6ffad2756ca6f73614
   subpackages:
   - zk
 - name: github.com/wfxiang08/go_thrift
@@ -48,18 +50,19 @@ imports:
   subpackages:
   - thrift
 - name: github.com/wfxiang08/thrift_rpc_base
-  version: f50df074809ff2c97782d61ba601049e4db6282b
+  version: d0067c3d8839934b19b114d9ced535d6506577ce
   subpackages:
-  - rpc_thrift
+  - rpc_thrift/services
   - rpc_utils
   - zkhelper
 - name: golang.org/x/sys
-  version: e48874b42435b4347fc52bdee0424a52abc974d7
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  repo: https://go.googlesource.com/sys
   subpackages:
   - unix
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
@@ -67,6 +70,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 6cb3b85ef5a0efef77caef88363ec4d4b5c0976d
+  version: f6abca593680b2315d2075e0f5e2a9751e3f431a
   subpackages:
   - assert
