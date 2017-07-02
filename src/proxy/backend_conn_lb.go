@@ -17,20 +17,20 @@ type BackendConnLBStateChanged interface {
 }
 
 type BackendConnLB struct {
-	transport   thrift.TTransport
-	address     string
-	serviceName string
-	input       chan *Request // 输入的请求, 有: 1024个Buffer
+	transport        thrift.TTransport
+	address          string
+	serviceName      string
+	input            chan *Request // 输入的请求, 有: 1024个Buffer
 
 	seqNumRequestMap *RequestMap
-	currentSeqId     int32 // 范围: 1 ~ 100000
+	currentSeqId     int32         // 范围: 1 ~ 100000
 	Index            int
 	delegate         BackendConnLBStateChanged
 	verbose          bool
-	IsConnActive     atomic2.Bool // 是否处于Active状态呢
+	IsConnActive     atomic2.Bool  // 是否处于Active状态呢
 
-	hbLastTime atomic2.Int64
-	hbTicker   *time.Ticker
+	hbLastTime       atomic2.Int64
+	hbTicker         *time.Ticker
 }
 
 //
@@ -45,8 +45,8 @@ type BackendConnLB struct {
 //      就是建立在transport之上的控制逻辑
 //
 func NewBackendConnLB(transport thrift.TTransport, serviceName string,
-	address string, delegate BackendConnLBStateChanged,
-	verbose bool) *BackendConnLB {
+address string, delegate BackendConnLBStateChanged,
+verbose bool) *BackendConnLB {
 	requestMap, _ := NewRequestMap(4096)
 	bc := &BackendConnLB{
 		transport:   transport,
@@ -69,8 +69,8 @@ func NewBackendConnLB(transport thrift.TTransport, serviceName string,
 
 func (bc *BackendConnLB) MarkConnActiveFalse() {
 	// 从Active切换到非正常状态
-	if bc.IsConnActive.Get() && bc.delegate != nil {
-		bc.IsConnActive.Set(false)
+	if bc.IsConnActive.CompareAndSwap(true, false) && bc.delegate != nil {
+		// bc.IsConnActive.Set(false)
 		bc.delegate.StateChanged(bc) // 通知其他人状态出现问题
 	} else {
 		bc.IsConnActive.Set(false)
@@ -107,7 +107,7 @@ func (bc *BackendConnLB) Address() string {
 }
 
 //
-// 将Request分配给BackendConnLB
+// Request为将要发送到后端进程请求，包括lb层的心跳，或来自前端的正常请求
 //
 func (bc *BackendConnLB) PushBack(r *Request) {
 	// 关键路径必须有Log, 高频路径的Log需要受verbose状态的控制
@@ -133,7 +133,7 @@ func (bc *BackendConnLB) loopWriter() error {
 	// 正常情况下, ok总是为True; 除非bc.input的发送者主动关闭了channel, 表示再也没有新的Task过来了
 	// 参考: https://tour.golang.org/concurrency/4
 	// 如果input没有关闭，则会block
-	c := NewTBufferedFramedTransport(bc.transport, 100*time.Microsecond, 20)
+	c := NewTBufferedFramedTransport(bc.transport, 100 * time.Microsecond, 20)
 
 	// bc.MarkConnActiveOK() // 准备接受数据
 	// BackendConnLB 在构造之初就有打开的transport, 并且Active默认为OK
@@ -143,6 +143,7 @@ func (bc *BackendConnLB) loopWriter() error {
 		bc.hbTicker = nil
 	}()
 
+	//
 	bc.loopReader(c) // 异步
 
 	// 建立连接之后，就启动HB
@@ -156,10 +157,10 @@ func (bc *BackendConnLB) loopWriter() error {
 		// 等待输入的Event, 或者 heartbeatTimeout
 		select {
 		case <-bc.hbTicker.C:
-			// 两种情况下，心跳会超时
-			// 1. 对方挂了
-			// 2. 自己快要挂了，然后就不再发送心跳；没有了心跳，就会超时
-			if time.Now().Unix()-bc.hbLastTime.Get() > HB_TIMEOUT {
+		// 两种情况下，心跳会超时
+		// 1. 对方挂了
+		// 2. 自己快要挂了，然后就不再发送心跳；没有了心跳，就会超时
+			if time.Now().Unix() - bc.hbLastTime.Get() > HB_TIMEOUT {
 				// 强制关闭c
 				c.Close()
 				return errors.New("Worker HB timeout")
@@ -184,7 +185,7 @@ func (bc *BackendConnLB) loopWriter() error {
 				//
 				if r.Request.TypeId == MESSAGE_TYPE_HEART_BEAT {
 					// 过期的HB信号，直接放弃
-					if time.Now().Unix()-r.Start > 4 {
+					if time.Now().Unix() - r.Start > 4 {
 						log.Warnf(Red("Expired HB Signals"))
 					}
 				}
@@ -217,7 +218,7 @@ func (bc *BackendConnLB) loopWriter() error {
 }
 
 //
-// 从RPC Backend中读取结果, ReadFrame读取的是一个thrift message
+// 从"RPC Backend" RPC Worker 中读取结果, ReadFrame读取的是一个thrift message
 // 存在两种情况:
 // 1. 正常读取thrift message, 然后从frame解码得到seqId, 然后得到request, 结束请求
 // 2. 读取错误
@@ -237,11 +238,12 @@ func (bc *BackendConnLB) loopReader(c *TBufferedFramedTransport) {
 			frame, err := c.ReadFrame() // 有可能被堵住
 
 			if err != nil {
-
+				// 如果出错，则Flush所有的请求
 				err1, ok := err.(thrift.TTransportException)
 				if !ok || err1.TypeId() != thrift.END_OF_FILE {
 					log.ErrorErrorf(err, Red("ReadFrame From rpc_server with Error: %v\n"), err)
 				}
+				// TODO: 可能需要细化，有些错误出现之后，可能需要给其他的请求一些机会
 				bc.flushRequests(err)
 				break
 			} else {
@@ -294,7 +296,15 @@ func (bc *BackendConnLB) setResponse(r *Request, data []byte, err error) error {
 		if typeId == MESSAGE_TYPE_STOP {
 			// 不再接受新的输入
 			// 直接来自后端的服务(不遵循: Request/Reply模型)
+			// 或者回传给后端一个确认停止消息
 			bc.MarkConnActiveFalse()
+
+			// 临时再发送一个请求; 有些语言没有异步，不太方便设置timeout, 那么通过stop confirm告知这是最后一个请求
+			r := NewStopConfirmRequest()
+			r.Service = bc.serviceName
+			r.Wait.Add(1)
+			bc.input <- r
+
 			return nil
 		}
 

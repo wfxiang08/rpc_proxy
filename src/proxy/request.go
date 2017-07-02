@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	thrift "github.com/wfxiang08/go_thrift/thrift"
 	log "github.com/wfxiang08/cyutils/utils/rolling_log"
+	"github.com/wfxiang08/go_thrift/thrift"
 	"io"
 	"strings"
 	"sync"
@@ -19,8 +19,9 @@ type Dispatcher interface {
 
 const (
 	// 不能使用负数
-	MESSAGE_TYPE_HEART_BEAT thrift.TMessageType = 20
-	MESSAGE_TYPE_STOP       thrift.TMessageType = 21
+	MESSAGE_TYPE_HEART_BEAT   thrift.TMessageType = 20
+	MESSAGE_TYPE_STOP         thrift.TMessageType = 21
+	MESSAGE_TYPE_STOP_CONFIRM thrift.TMessageType = 22
 )
 
 type Request struct {
