@@ -112,6 +112,7 @@ func (bc *BackendConnLB) Address() string {
 func (bc *BackendConnLB) PushBack(r *Request) {
 	// 关键路径必须有Log, 高频路径的Log需要受verbose状态的控制
 	if bc.IsConnActive.Get() {
+		// log.Printf("Push Request to backend: %s", r.Request.Name)
 		r.Service = bc.serviceName
 		r.Wait.Add(1)
 		bc.input <- r
@@ -143,7 +144,7 @@ func (bc *BackendConnLB) loopWriter() error {
 		bc.hbTicker = nil
 	}()
 
-	//
+	// 从"RPC Backend" RPC Worker 中读取结果, 然后返回给proxy
 	bc.loopReader(c) // 异步
 
 	// 建立连接之后，就启动HB

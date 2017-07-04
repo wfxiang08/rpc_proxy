@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	thrift "github.com/wfxiang08/go_thrift/thrift"
+	"github.com/wfxiang08/go_thrift/thrift"
 
 	log "github.com/wfxiang08/cyutils/utils/rolling_log"
 	"io"
@@ -226,6 +226,8 @@ func (p *TBufferedFramedTransport) FlushBuffer(force bool) error {
 	if err != nil {
 		return thrift.NewTTransportExceptionFromError(err)
 	}
+
+	// log.Printf("Flushing buffer with size: %d to backend", size)
 
 	// 2. 然后继续写入p.buf中的数据
 	if size > 0 {
