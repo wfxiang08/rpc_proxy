@@ -157,7 +157,7 @@ func (bc *BackendConn) PushBack(r *Request) {
 //
 func (bc *BackendConn) ensureConn() (transport thrift.TTransport, err error) {
 	// 1. 创建连接(只要IP没有问题， err一般就是空)
-	timeout := time.Second * 5
+	timeout := time.Second * REQUEST_EXPIRED_TIME_SECONDS // 15s
 	if strings.Contains(bc.addr, ":") {
 		transport, err = thrift.NewTSocketTimeout(bc.addr, timeout)
 	} else {
