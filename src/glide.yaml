@@ -7,11 +7,13 @@ import:
   - utils/errors
   - utils/rolling_log
 - package: github.com/c4pt0r/cfg
-- package: github.com/docopt/docopt-go
 - package: github.com/fatih/color
 - package: github.com/ngaut/logging
 - package: github.com/wfxiang08/go_thrift
 - package: github.com/wfxiang08/thrift_rpc_base
+- package: github.com/wfxiang08/go-zookeeper
+  subpackages:
+  - zk
 testImport:
 - package: github.com/stretchr/testify
   subpackages:

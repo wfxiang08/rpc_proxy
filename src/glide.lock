@@ -1,5 +1,5 @@
-hash: 50ed17b94589c2be6ad3d92ed2746f64b7f84b2916b8818820dcedcaa9106405
-updated: 2017-07-02T22:28:24.187904469+08:00
+hash: e79d2927d6437eef78ebc9dcaf076dd63208cb9ab3def5d7bbc6ea2bad718c78
+updated: 2017-07-06T10:19:52.99220665+08:00
 imports:
 - name: github.com/c4pt0r/cfg
   version: 429e6985f0b07bceaa33b57ee612fbca4797a9a6
@@ -11,8 +11,6 @@ imports:
   version: 003851be7bb0694fe3cc457a49529a19388ee7cf
   subpackages:
   - etcd
-- name: github.com/docopt/docopt-go
-  version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/fatih/color
   version: 62e9147c64a1ed519147b62a56a14e83e2be02c1
 - name: github.com/mattn/go-colorable
