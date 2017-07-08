@@ -243,8 +243,11 @@ func (p *ThriftRpcServer) Run() {
 	// 强制退出? TODO: Graceful退出
 	go func() {
 		<-exitSignal
-		evtExit <- true
 		log.Info(Magenta("Receive Exit Signals...."))
+
+		if registerService {
+			evtExit <- true
+		}
 		if registerService {
 			endpoint.DeleteServiceEndpoint(p.Topo)
 		} else {
@@ -265,6 +268,8 @@ func (p *ThriftRpcServer) Run() {
 				time.Sleep(time.Second)
 			}
 		}
+
+		// 确定处理完毕数据之后，关闭transport
 		if registerService {
 			transport.Interrupt()
 		}
