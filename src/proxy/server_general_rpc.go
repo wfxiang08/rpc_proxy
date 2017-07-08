@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/wfxiang08/cyutils/utils/atomic2"
 	log "github.com/wfxiang08/cyutils/utils/rolling_log"
-	"github.com/wfxiang08/thrift_rpc_base/rpc_utils"
 	topozk "github.com/wfxiang08/go-zookeeper/zk"
 	"github.com/wfxiang08/go_thrift/thrift"
+	"github.com/wfxiang08/thrift_rpc_base/rpc_utils"
 	"os"
 	"os/signal"
 	"strings"
@@ -60,7 +60,8 @@ func GetServiceIdentity(frontendAddr string) string {
 	fid := strings.Replace(frontendAddr, ".", "_", -1)
 	fid = strings.Replace(fid, ":", "_", -1)
 	fid = strings.Replace(fid, "/", "", -1)
-	if len(fid) > 20 { // unix domain socket
+	if len(fid) > 20 {
+		// unix domain socket
 		fid = fid[len(fid)-20 : len(fid)]
 	}
 	return fid
@@ -173,7 +174,12 @@ func (p *ThriftRpcServer) Dispatch(r *Request) error {
 
 func (p *ThriftRpcServer) Run() {
 	//	// 1. 创建到zk的连接
-	p.Topo = NewTopology(p.ProductName, p.ZkAddr)
+	// 有条件地做服务注册
+
+	registerService := len(p.ZkAddr) > 0 && len(p.ProductName) > 0
+	if registerService {
+		p.Topo = NewTopology(p.ProductName, p.ZkAddr)
+	}
 
 	// 127.0.0.1:5555 --> 127_0_0_1:5555
 	lbServiceName := GetServiceIdentity(p.FrontendAddr)
@@ -185,7 +191,9 @@ func (p *ThriftRpcServer) Run() {
 	// kill -9 pid
 	// kill -s SIGKILL pid 还是留给运维吧
 
-	StartTicker(p.config.FalconClient, p.ServiceName)
+	if len(p.config.FalconClient) > 0 {
+		StartTicker(p.config.FalconClient, p.ServiceName)
+	}
 
 	// 初始状态为不上线
 	var state atomic2.Bool
@@ -194,9 +202,13 @@ func (p *ThriftRpcServer) Run() {
 
 	// 注册服务
 	evtExit := make(chan interface{})
-	endpoint := RegisterService(p.ServiceName, p.FrontendAddr, lbServiceName,
-		p.Topo, evtExit, p.config.WorkDir, p.config.CodeUrlVersion,
-		&state, stateChan)
+
+	var endpoint *ServiceEndpoint = nil
+	if registerService {
+		endpoint = RegisterService(p.ServiceName, p.FrontendAddr, lbServiceName,
+			p.Topo, evtExit, p.config.WorkDir, p.config.CodeUrlVersion,
+			&state, stateChan)
+	}
 
 	// 3. 读取"前端"的配置
 	var transport thrift.TServerTransport
@@ -233,7 +245,9 @@ func (p *ThriftRpcServer) Run() {
 		<-exitSignal
 		evtExit <- true
 		log.Info(Magenta("Receive Exit Signals...."))
-		endpoint.DeleteServiceEndpoint(p.Topo)
+		if registerService {
+			endpoint.DeleteServiceEndpoint(p.Topo)
+		}
 
 		// 等待
 		start := time.Now().Unix()
