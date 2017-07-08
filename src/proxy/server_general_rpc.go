@@ -298,11 +298,25 @@ func (p *ThriftRpcServer) Run() {
 				go x.Serve(p, 1000)
 			} else {
 				go func() {
-					// 直接处理请求，一次性的
+					defer c.Close()
 					ip := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
 					op := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
-					p.Processor.Process(ip, op)
-					c.Close()
+					for true {
+						ok, err := p.Processor.Process(ip, op)
+
+						if !ok {
+							if err1 := err.(thrift.TTransportException); err1 != nil {
+								if err1.TypeId() == thrift.END_OF_FILE {
+									// 连接断开直接关闭
+									return
+								} else {
+									log.ErrorErrorf(err, "Error processing request")
+								}
+							}
+							break
+						}
+
+					}
 				}()
 			}
 		}
