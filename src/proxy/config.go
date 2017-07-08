@@ -118,7 +118,7 @@ func LoadConf(configFile string) (*ServiceConfig, error) {
 	conf.FrontSock, _ = c.ReadString("front_sock", "")
 	conf.FrontSock = strings.TrimSpace(conf.FrontSock)
 	// 配置文件中使用的是相对路径，在注册到zk时，需要还原成为绝对路径
-	if len(conf.FrontSock) > 0 {
+	if len(conf.FrontSock) > 0 && !strings.HasPrefix(conf.FrontSock, "/") {
 		dir, _ := os.Getwd()
 		conf.FrontSock = path.Clean(path.Join(dir, conf.FrontSock))
 	}
