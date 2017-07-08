@@ -247,6 +247,9 @@ func (p *ThriftRpcServer) Run() {
 		log.Info(Magenta("Receive Exit Signals...."))
 		if registerService {
 			endpoint.DeleteServiceEndpoint(p.Topo)
+		} else {
+			// 如果没有注册到后端服务器，则直接不再接受新请求
+			transport.Interrupt()
 		}
 
 		// 等待
@@ -262,7 +265,9 @@ func (p *ThriftRpcServer) Run() {
 				time.Sleep(time.Second)
 			}
 		}
-		transport.Interrupt()
+		if registerService {
+			transport.Interrupt()
+		}
 		transport.Close()
 	}()
 
@@ -283,14 +288,22 @@ func (p *ThriftRpcServer) Run() {
 			}
 			x := NewNonBlockSession(c, address, p.Verbose, &p.lastRequestTime)
 			// Session独立处理自己的请求
-			go x.Serve(p, 1000)
+			if registerService {
+				go x.Serve(p, 1000)
+			} else {
+				// 如何处理单个的请求呢?
+				go x.Serve(p, 1)
+			}
 		}
 	}()
 
 	// 准备上线服务
 	state.Set(true)
-	stateChan <- true
+	if registerService {
+		stateChan <- true
+	}
 
+	log.Printf("Begin to accept requests...")
 	// Accept什么时候出错，出错之后如何处理呢?
 	for {
 		c, err := transport.Accept()
