@@ -5,44 +5,53 @@ package proxy
 
 import (
 	"fmt"
-	log "github.com/wfxiang08/cyutils/utils/rolling_log"
 	"github.com/c4pt0r/cfg"
+	log "github.com/wfxiang08/cyutils/utils/rolling_log"
 	"os"
 	"path"
 	"strings"
 )
 
-type Config struct {
-	ProductName string
-	Service     string
-
+type ProductConfig struct {
+	ProductName      string
 	ZkAddr           string
 	ZkSessionTimeout int
+}
+type ServiceConfig struct {
+	ProductConfig
+	StandAlone     bool
+	Service        string
+	FrontHost      string
+	FrontPort      string
+	FrontSock      string
+	FrontendAddr   string
+	IpPrefix       string
 
-	FrontHost    string
-	FrontPort    string
-	FrontSock    string
-	FrontendAddr string
-	IpPrefix     string
+	BackAddr       string
 
-	BackAddr string
-
-	ProxyAddr string
-	Profile   bool
-	Verbose   bool
+	Profile        bool
+	Verbose        bool
 
 	// 提供给dashboard来查看服务状态
 	WorkDir        string
 	CodeUrlVersion string
 
 	// 用于监控
-	FalconClient string
+	FalconClient   string
+}
+
+type ProxyConfig struct {
+	ProductConfig
+
+	ProxyAddr string
+	Profile   bool
+	Verbose   bool
 }
 
 //
 // 通过参数依赖，保证getFrontendAddr的调用位置（必须等待Host, IpPrefix, Port读取完毕之后)
 //
-func (conf *Config) getFrontendAddr(frontHost, ipPrefix, frontPort string) string {
+func (conf *ServiceConfig) getFrontendAddr(frontHost, ipPrefix, frontPort string) string {
 	if conf.FrontSock != "" {
 		return conf.FrontSock
 	}
@@ -62,13 +71,13 @@ func (conf *Config) getFrontendAddr(frontHost, ipPrefix, frontPort string) strin
 	return frontendAddr
 }
 
-func LoadConf(configFile string) (*Config, error) {
+func LoadConf(configFile string) (*ServiceConfig, error) {
 	c := cfg.NewCfg(configFile)
 	if err := c.Load(); err != nil {
 		log.PanicErrorf(err, "load config '%s' failed", configFile)
 	}
 
-	conf := &Config{}
+	conf := &ServiceConfig{}
 
 	// 读取product
 	conf.ProductName, _ = c.ReadString("product", "test")
@@ -93,6 +102,9 @@ func LoadConf(configFile string) (*Config, error) {
 
 	conf.ZkSessionTimeout = loadConfInt("zk_session_timeout", 30)
 	conf.Verbose = loadConfInt("verbose", 0) == 1
+
+	// 是否独立于zookeeper独立运行
+	conf.StandAlone = loadConfInt("stand_alone", 0) == 1
 
 	conf.Service, _ = c.ReadString("service", "")
 	conf.Service = strings.TrimSpace(conf.Service)
@@ -121,10 +133,47 @@ func LoadConf(configFile string) (*Config, error) {
 	conf.BackAddr, _ = c.ReadString("back_address", "")
 	conf.BackAddr = strings.TrimSpace(conf.BackAddr)
 
+	conf.FalconClient, _ = c.ReadString("falcon_client", "")
+
+	profile, _ := c.ReadInt("profile", 0)
+	conf.Profile = profile == 1
+	return conf, nil
+}
+
+func LoadProxyConf(configFile string) (*ProxyConfig, error) {
+	c := cfg.NewCfg(configFile)
+	if err := c.Load(); err != nil {
+		log.PanicErrorf(err, "load config '%s' failed", configFile)
+	}
+
+	conf := &ProxyConfig{}
+
+	// 读取product
+	conf.ProductName, _ = c.ReadString("product", "test")
+	if len(conf.ProductName) == 0 {
+		log.Panicf("invalid config: product entry is missing in %s", configFile)
+	}
+
+	// 读取zk
+	conf.ZkAddr, _ = c.ReadString("zk", "")
+	if len(conf.ZkAddr) == 0 {
+		log.Panicf("invalid config: need zk entry is missing in %s", configFile)
+	}
+	conf.ZkAddr = strings.TrimSpace(conf.ZkAddr)
+
+	loadConfInt := func(entry string, defInt int) int {
+		v, _ := c.ReadInt(entry, defInt)
+		if v < 0 {
+			log.Panicf("invalid config: read %s = %d", entry, v)
+		}
+		return v
+	}
+
+	conf.ZkSessionTimeout = loadConfInt("zk_session_timeout", 30)
+	conf.Verbose = loadConfInt("verbose", 0) == 1
+
 	conf.ProxyAddr, _ = c.ReadString("proxy_address", "")
 	conf.ProxyAddr = strings.TrimSpace(conf.ProxyAddr)
-
-	conf.FalconClient, _ = c.ReadString("falcon_client", "")
 
 	profile, _ := c.ReadInt("profile", 0)
 	conf.Profile = profile == 1

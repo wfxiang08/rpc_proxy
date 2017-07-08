@@ -30,10 +30,10 @@ type ThriftLoadBalanceServer struct {
 	backendService  *BackServiceLB
 	exitEvt         chan bool
 	lastRequestTime atomic2.Int64
-	config          *Config
+	config          *ServiceConfig
 }
 
-func NewThriftLoadBalanceServer(config *Config) *ThriftLoadBalanceServer {
+func NewThriftLoadBalanceServer(config *ServiceConfig) *ThriftLoadBalanceServer {
 	log.Printf("FrontAddr: %s\n", Magenta(config.FrontendAddr))
 
 	// 前端对接rpc_proxy

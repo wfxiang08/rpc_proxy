@@ -26,7 +26,7 @@ type ProxyServer struct {
 	router      *Router
 }
 
-func NewProxyServer(config *Config) *ProxyServer {
+func NewProxyServer(config *ProxyConfig) *ProxyServer {
 	p := &ProxyServer{
 		productName: config.ProductName,
 		proxyAddr:   config.ProxyAddr,

@@ -6,12 +6,13 @@ import (
 	log "github.com/wfxiang08/cyutils/utils/rolling_log"
 )
 
-type ConfigCheck func(conf *Config)
+type ConfigCheck func(conf *ServiceConfig)
+type ProxyConfigCheck func(conf *ProxyConfig)
 
 //
 // 一般的ThriftService的配置检测
 //
-func ConfigCheckThriftService(conf *Config) {
+func ConfigCheckThriftService(conf *ServiceConfig) {
 	if conf.ProductName == "" {
 		log.Panic("Invalid ProductName")
 	}
@@ -31,7 +32,7 @@ func ConfigCheckThriftService(conf *Config) {
 //
 // RPC Proxy的Config Checker
 //
-func ConfigCheckRpcProxy(conf *Config) {
+func ConfigCheckRpcProxy(conf *ProxyConfig) {
 	if conf.ProductName == "" {
 		log.Panic("Invalid ProductName")
 	}
@@ -46,7 +47,7 @@ func ConfigCheckRpcProxy(conf *Config) {
 //
 // RPC LB的Config Checker
 //
-func ConfigCheckRpcLB(conf *Config) {
+func ConfigCheckRpcLB(conf *ServiceConfig) {
 	if conf.ProductName == "" {
 		log.Panic("Invalid ProductName")
 	}

@@ -19,7 +19,7 @@ func main() {
 		// 验证LB的配置
 		proxy.ConfigCheckRpcLB,
 		// 根据配置创建一个Server
-		func(config *proxy.Config) proxy.Server {
+		func(config *proxy.ServiceConfig) proxy.Server {
 			return proxy.NewThriftLoadBalanceServer(config)
 		}, buildDate, gitVersion)
 

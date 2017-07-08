@@ -19,7 +19,8 @@ import (
 type Server interface {
 	Run()
 }
-type ServerFactorory func(config *Config) Server
+type ServerFactorory func(config *ServiceConfig) Server
+type ProxyFactorory func(config *ProxyConfig) Server
 
 //
 // Thrift Server的参数
@@ -33,10 +34,10 @@ type ThriftRpcServer struct {
 	Processor       thrift.TProcessor
 	Verbose         bool
 	lastRequestTime atomic2.Int64
-	config          *Config
+	config          *ServiceConfig
 }
 
-func NewThriftRpcServer(config *Config, processor thrift.TProcessor) *ThriftRpcServer {
+func NewThriftRpcServer(config *ServiceConfig, processor thrift.TProcessor) *ThriftRpcServer {
 	log.Printf("FrontAddr: %s\n", Magenta(config.FrontendAddr))
 
 	return &ThriftRpcServer{
