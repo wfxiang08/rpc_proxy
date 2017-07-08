@@ -4,7 +4,7 @@ package proxy
 
 import (
 	"github.com/wfxiang08/go_thrift/thrift"
-	"github.com/wfxiang08/thrift_rpc_base/rpc_thrift/services"
+	"github.com/wfxiang08/thrift_rpc_base/rpcthrift/services"
 )
 
 //

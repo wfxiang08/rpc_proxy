@@ -48,9 +48,9 @@ imports:
   subpackages:
   - thrift
 - name: github.com/wfxiang08/thrift_rpc_base
-  version: d0067c3d8839934b19b114d9ced535d6506577ce
+  version: ea90195d180d3280bec0eccd3d08dc74f1761972
   subpackages:
-  - rpc_thrift/services
+  - rpcthrift/services
   - rpc_utils
   - zkhelper
 - name: golang.org/x/sys

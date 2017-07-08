@@ -1,2 +1,2 @@
-thrift -r --gen py rpc_thrift.services.thrift
-mv gen-py/rpc_thrift/services/* lib/python/rpc_thrift/services/
+#!/usr/bin/env bash
+thrift -r --gen py RpcThrift.Services.thrift.thrift
