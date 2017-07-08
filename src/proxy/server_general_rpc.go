@@ -176,8 +176,7 @@ func (p *ThriftRpcServer) Dispatch(r *Request) error {
 func (p *ThriftRpcServer) Run() {
 	//	// 1. 创建到zk的连接
 	// 有条件地做服务注册
-
-	registerService := len(p.ZkAddr) > 0 && len(p.ProductName) > 0
+	registerService := !p.config.StandAlone // 不独立运行则注册服务
 	if registerService {
 		p.Topo = NewTopology(p.ProductName, p.ZkAddr)
 	}
