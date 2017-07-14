@@ -3,10 +3,10 @@ Description=rpc_proxy online version
 After=network.target
 
 [Service]
-ExecStart=/usr/local/rpc_proxy/bin/rpc_proxy -c /usr/local/rpc_proxy/config.online.ini -L /usr/local/rpc_proxy/log/proxy-online.log
+ExecStart=/usr/local/rpc_proxy/bin/service_rpc_proxy -c /usr/local/rpc_proxy/proxy-config.online.ini -L /usr/local/rpc_proxy/log/proxy-online.log
 
-User=root
-Group=root
+User=worker
+Group=worker
 
 [Install]
 WantedBy=multi-user.target

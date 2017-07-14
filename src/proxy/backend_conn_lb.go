@@ -17,20 +17,20 @@ type BackendConnLBStateChanged interface {
 }
 
 type BackendConnLB struct {
-	transport        thrift.TTransport
-	address          string
-	serviceName      string
-	input            chan *Request // 输入的请求, 有: 1024个Buffer
+	transport   thrift.TTransport
+	address     string
+	serviceName string
+	input       chan *Request // 输入的请求, 有: 1024个Buffer
 
 	seqNumRequestMap *RequestMap
-	currentSeqId     int32         // 范围: 1 ~ 100000
+	currentSeqId     int32 // 范围: 1 ~ 100000
 	Index            int
 	delegate         BackendConnLBStateChanged
 	verbose          bool
-	IsConnActive     atomic2.Bool  // 是否处于Active状态呢
+	IsConnActive     atomic2.Bool // 是否处于Active状态呢
 
-	hbLastTime       atomic2.Int64
-	hbTicker         *time.Ticker
+	hbLastTime atomic2.Int64
+	hbTicker   *time.Ticker
 }
 
 //
@@ -45,8 +45,8 @@ type BackendConnLB struct {
 //      就是建立在transport之上的控制逻辑
 //
 func NewBackendConnLB(transport thrift.TTransport, serviceName string,
-address string, delegate BackendConnLBStateChanged,
-verbose bool) *BackendConnLB {
+	address string, delegate BackendConnLBStateChanged,
+	verbose bool) *BackendConnLB {
 	requestMap, _ := NewRequestMap(4096)
 	bc := &BackendConnLB{
 		transport:   transport,
@@ -134,7 +134,7 @@ func (bc *BackendConnLB) loopWriter() error {
 	// 正常情况下, ok总是为True; 除非bc.input的发送者主动关闭了channel, 表示再也没有新的Task过来了
 	// 参考: https://tour.golang.org/concurrency/4
 	// 如果input没有关闭，则会block
-	c := NewTBufferedFramedTransport(bc.transport, 100 * time.Microsecond, 20)
+	c := NewTBufferedFramedTransport(bc.transport, 100*time.Microsecond, 20)
 
 	// bc.MarkConnActiveOK() // 准备接受数据
 	// BackendConnLB 在构造之初就有打开的transport, 并且Active默认为OK
@@ -158,10 +158,10 @@ func (bc *BackendConnLB) loopWriter() error {
 		// 等待输入的Event, 或者 heartbeatTimeout
 		select {
 		case <-bc.hbTicker.C:
-		// 两种情况下，心跳会超时
-		// 1. 对方挂了
-		// 2. 自己快要挂了，然后就不再发送心跳；没有了心跳，就会超时
-			if time.Now().Unix() - bc.hbLastTime.Get() > HB_TIMEOUT {
+			// 两种情况下，心跳会超时
+			// 1. 对方挂了
+			// 2. 自己快要挂了，然后就不再发送心跳；没有了心跳，就会超时
+			if time.Now().Unix()-bc.hbLastTime.Get() > HB_TIMEOUT {
 				// 强制关闭c
 				c.Close()
 				return errors.New("Worker HB timeout")
@@ -186,30 +186,39 @@ func (bc *BackendConnLB) loopWriter() error {
 				//
 				if r.Request.TypeId == MESSAGE_TYPE_HEART_BEAT {
 					// 过期的HB信号，直接放弃
-					if time.Now().Unix() - r.Start > 4 {
+					if time.Now().Unix()-r.Start > 4 {
 						log.Warnf(Red("Expired HB Signals"))
 					}
-				}
-				// 先不做优化
-				var flush = true // len(bc.input) == 0
+				} else if r.Request.TypeId == MESSAGE_TYPE_STOP_CONFIRM {
+					// 强制写一个新的Response到Worker，不关心是否写成功；也不关心反馈结果
+					c.Write(r.Request.Data)
+					err := c.FlushBuffer(true)
 
-				// 1. 替换新的SeqId(currentSeqId只在当前线程中使用, 不需要同步)
-				r.ReplaceSeqId(bc.currentSeqId)
-				bc.IncreaseCurrentSeqId()
+					if err != nil {
+						log.ErrorErrorf(err, "Stop confirm Error")
+					}
+				} else {
+					// 先不做优化
+					var flush = true // len(bc.input) == 0
 
-				// 2. 主动控制Buffer的flush
-				// 先记录SeqId <--> Request, 再发送请求
-				// 否则: 请求从后端返回，记录还没有完成，就容易导致Request丢失
-				bc.seqNumRequestMap.Add(r.Response.SeqId, r)
-				c.Write(r.Request.Data)
-				err := c.FlushBuffer(flush)
+					// 1. 替换新的SeqId(currentSeqId只在当前线程中使用, 不需要同步)
+					r.ReplaceSeqId(bc.currentSeqId)
+					bc.IncreaseCurrentSeqId()
 
-				if err != nil {
-					bc.seqNumRequestMap.Pop(r.Response.SeqId)
-					log.ErrorErrorf(err, "FlushBuffer Error: %v\n", err)
+					// 2. 主动控制Buffer的flush
+					// 先记录SeqId <--> Request, 再发送请求
+					// 否则: 请求从后端返回，记录还没有完成，就容易导致Request丢失
+					bc.seqNumRequestMap.Add(r.Response.SeqId, r)
+					c.Write(r.Request.Data)
+					err := c.FlushBuffer(flush)
 
-					// 进入不可用状态(不可用状态下，通过自我心跳进入可用状态)
-					return bc.setResponse(r, nil, err)
+					if err != nil {
+						bc.seqNumRequestMap.Pop(r.Response.SeqId)
+						log.ErrorErrorf(err, "FlushBuffer Error: %v\n", err)
+
+						// 进入不可用状态(不可用状态下，通过自我心跳进入可用状态)
+						return bc.setResponse(r, nil, err)
+					}
 				}
 			}
 		}
@@ -341,6 +350,7 @@ func (bc *BackendConnLB) setResponse(r *Request, data []byte, err error) error {
 	if data != nil {
 		r.RestoreSeqId()
 	}
+
 
 	r.Wait.Done()
 	return err

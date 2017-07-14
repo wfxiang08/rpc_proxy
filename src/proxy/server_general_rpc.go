@@ -11,6 +11,7 @@ import (
 	"github.com/wfxiang08/thrift_rpc_base/rpc_utils"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -298,21 +299,32 @@ func (p *ThriftRpcServer) Run() {
 				go x.Serve(p, 1000)
 			} else {
 				go func() {
-					defer c.Close()
+					// 打印异常信息
+					defer func() {
+						c.Close()
+						if e := recover(); e != nil {
+							log.Errorf("panic in processor: %v: %s", e, debug.Stack())
+						}
+					}()
+
 					ip := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
 					op := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
+
 					for true {
 						ok, err := p.Processor.Process(ip, op)
 
+						if err, ok := err.(thrift.TTransportException); ok && err.TypeId() == thrift.END_OF_FILE {
+							return
+						} else if err != nil {
+							log.ErrorErrorf(err, "Error processing request, quit")
+							return
+						}
+						if err, ok := err.(thrift.TApplicationException); ok && err.TypeId() == thrift.UNKNOWN_METHOD {
+							log.ErrorErrorf(err, "Error processing request, continue")
+							continue
+						}
 						if !ok {
-							if err1 := err.(thrift.TTransportException); err1 != nil {
-								if err1.TypeId() == thrift.END_OF_FILE {
-									// 连接断开直接关闭
-									return
-								} else {
-									log.ErrorErrorf(err, "Error processing request")
-								}
-							}
+							log.ErrorErrorf(err, "Process Not OK, stopped")
 							break
 						}
 
