@@ -64,7 +64,7 @@ func GetServiceIdentity(frontendAddr string) string {
 	fid = strings.Replace(fid, "/", "", -1)
 	if len(fid) > 20 {
 		// unix domain socket
-		fid = fid[len(fid)-20 : len(fid)]
+		fid = fid[len(fid) - 20 : len(fid)]
 	}
 	return fid
 
@@ -74,7 +74,7 @@ func GetServiceIdentity(frontendAddr string) string {
 // 去ZK注册当前的Service
 //
 func RegisterService(serviceName, frontendAddr, serviceId string, topo *Topology, evtExit chan interface{},
-	workDir string, codeUrlVerion string, state *atomic2.Bool, stateChan chan bool) *ServiceEndpoint {
+workDir string, codeUrlVerion string, state *atomic2.Bool, stateChan chan bool) *ServiceEndpoint {
 
 	// 1. 准备数据
 	// 记录Service Endpoint的信息
@@ -113,7 +113,7 @@ func RegisterService(serviceName, frontendAddr, serviceId string, topo *Topology
 				case <-evtExit:
 					return
 				case <-stateChan:
-					// 如何状态变化(则重新注册)
+				// 如何状态变化(则重新注册)
 					endpoint.DeleteServiceEndpoint(topo)
 					if state == nil || state.Get() {
 						endpoint.AddServiceEndpoint(topo)
@@ -121,7 +121,7 @@ func RegisterService(serviceName, frontendAddr, serviceId string, topo *Topology
 				case e := <-evtbus:
 					event := e.(topozk.Event)
 					if event.State == topozk.StateExpired ||
-						event.Type == topozk.EventNotWatching {
+							event.Type == topozk.EventNotWatching {
 						// Session过期了，则需要删除之前的数据，
 						// 因为当前的session不是之前的数据的Owner
 						endpoint.DeleteServiceEndpoint(topo)
@@ -141,7 +141,7 @@ func RegisterService(serviceName, frontendAddr, serviceId string, topo *Topology
 				case <-evtExit:
 					return
 				case <-timer.C:
-					// pass
+				// pass
 				}
 			}
 
@@ -261,11 +261,11 @@ func (p *ThriftRpcServer) Run() {
 		for true {
 			// 如果5s内没有接受到新的请求了，则退出
 			now := time.Now().Unix()
-			if now-p.lastRequestTime.Get() > 5 {
+			if now - p.lastRequestTime.Get() > 5 {
 				log.Info(Red("Graceful Exit..."))
 				break
 			} else {
-				log.Printf(Cyan("Sleeping %d seconds\n"), now-start)
+				log.Printf(Cyan("Sleeping %d seconds\n"), now - start)
 				time.Sleep(time.Second)
 			}
 		}
@@ -316,7 +316,7 @@ func (p *ThriftRpcServer) Run() {
 						if err != nil {
 							// 如果链路出现异常（必须结束)
 							if err, ok := err.(thrift.TTransportException); ok && (err.TypeId() == thrift.END_OF_FILE ||
-								strings.Contains(err.Error(), "use of closed network connection")) {
+									strings.Contains(err.Error(), "use of closed network connection")) {
 								return
 							} else if err != nil {
 								// 其他链路问题，直接报错，退出
@@ -330,6 +330,7 @@ func (p *ThriftRpcServer) Run() {
 								continue
 							}
 
+							log.ErrorErrorf(err, "Error processing request")
 							// INTERNAL_ERROR --> ok: true 可以继续
 							// PROTOCOL_ERROR --> ok: false
 						}
@@ -337,7 +338,9 @@ func (p *ThriftRpcServer) Run() {
 						// 其他情况下，ok == false，意味io过程中存在读写错误，connection上存在脏数据
 						// 用户自定义的异常，必须继承自: *services.RpcException, 否则整个流程就容易出现问题
 						if !ok {
-							log.Printf("Process Not OK, stopped")
+							if err == nil {
+								log.Printf("Process Not OK, stopped")
+							}
 							break
 						}
 
