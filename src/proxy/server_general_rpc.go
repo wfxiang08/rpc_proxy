@@ -313,21 +313,31 @@ func (p *ThriftRpcServer) Run() {
 					for true {
 						ok, err := p.Processor.Process(ip, op)
 
-						if err, ok := err.(thrift.TTransportException); ok && err.TypeId() == thrift.END_OF_FILE {
-							return
-						} else if err != nil {
-							// 如果是网络问题，则直接报错
-							if !strings.Contains(err.Error(), "use of closed network connection") {
+						if err != nil {
+							// 如果链路出现异常（必须结束)
+							if err, ok := err.(thrift.TTransportException); ok && (err.TypeId() == thrift.END_OF_FILE ||
+								strings.Contains(err.Error(), "use of closed network connection")) {
+								return
+							} else if err != nil {
+								// 其他链路问题，直接报错，退出
 								log.ErrorErrorf(err, "Error processing request, quit")
+								return
 							}
-							return
+
+							// 如果是方法未知，则直接报错，然后跳过
+							if err, ok := err.(thrift.TApplicationException); ok && err.TypeId() == thrift.UNKNOWN_METHOD {
+								log.ErrorErrorf(err, "Error processing request, continue")
+								continue
+							}
+
+							// INTERNAL_ERROR --> ok: true 可以继续
+							// PROTOCOL_ERROR --> ok: false
 						}
-						if err, ok := err.(thrift.TApplicationException); ok && err.TypeId() == thrift.UNKNOWN_METHOD {
-							log.ErrorErrorf(err, "Error processing request, continue")
-							continue
-						}
+
+						// 其他情况下，ok == false，意味io过程中存在读写错误，connection上存在脏数据
+						// 用户自定义的异常，必须继承自: *services.RpcException, 否则整个流程就容易出现问题
 						if !ok {
-							log.ErrorErrorf(err, "Process Not OK, stopped")
+							log.Printf("Process Not OK, stopped")
 							break
 						}
 
