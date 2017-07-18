@@ -316,7 +316,10 @@ func (p *ThriftRpcServer) Run() {
 						if err, ok := err.(thrift.TTransportException); ok && err.TypeId() == thrift.END_OF_FILE {
 							return
 						} else if err != nil {
-							log.ErrorErrorf(err, "Error processing request, quit")
+							// 如果是网络问题，则直接报错
+							if !strings.Contains(err.Error(), "use of closed network connection") {
+								log.ErrorErrorf(err, "Error processing request, quit")
+							}
 							return
 						}
 						if err, ok := err.(thrift.TApplicationException); ok && err.TypeId() == thrift.UNKNOWN_METHOD {
