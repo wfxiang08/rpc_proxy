@@ -6,7 +6,7 @@ import (
 	"github.com/wfxiang08/cyutils/utils/atomic2"
 	"github.com/wfxiang08/cyutils/utils/errors"
 	log "github.com/wfxiang08/cyutils/utils/rolling_log"
-	thrift "github.com/wfxiang08/go_thrift/thrift"
+	"github.com/wfxiang08/go_thrift/thrift"
 	"sync"
 	"time"
 )
@@ -17,29 +17,29 @@ import (
 type NonBlockSession struct {
 	*TBufferedFramedTransport
 
-	RemoteAddress string
+	RemoteAddress   string
 
-	closed  atomic2.Bool
-	verbose bool
+	closed          atomic2.Bool
+	verbose         bool
 
 	// 用于记录整个RPC服务的最后的访问时间，然后用于Graceful Stop
 	lastRequestTime *atomic2.Int64
 
-	lastSeqId int32
+	lastSeqId       int32
 }
 
 func NewNonBlockSession(c thrift.TTransport, address string, verbose bool,
-	lastRequestTime *atomic2.Int64) *NonBlockSession {
-	return NewNonBlockSessionSize(c, address, verbose, lastRequestTime, 1024*32, 1800)
+lastRequestTime *atomic2.Int64) *NonBlockSession {
+	return NewNonBlockSessionSize(c, address, verbose, lastRequestTime, 1024 * 32, 1800)
 }
 
 func NewNonBlockSessionSize(c thrift.TTransport, address string, verbose bool,
-	lastRequestTime *atomic2.Int64, bufsize int, timeout int) *NonBlockSession {
+lastRequestTime *atomic2.Int64, bufsize int, timeout int) *NonBlockSession {
 	s := &NonBlockSession{
 		RemoteAddress:            address,
 		lastRequestTime:          lastRequestTime,
 		verbose:                  verbose,
-		TBufferedFramedTransport: NewTBufferedFramedTransport(c, time.Microsecond*100, 20),
+		TBufferedFramedTransport: NewTBufferedFramedTransport(c, time.Microsecond * 100, 20),
 	}
 
 	// 还是基于c net.Conn进行读写，只是采用Redis协议进行编码解码
@@ -79,7 +79,8 @@ func (s *NonBlockSession) Serve(d Dispatcher, maxPipeline int) {
 
 			log.Infof(Red("Session [%p] closed, Abandon %d Tasks"), s, len(tasks))
 
-			for _ = range tasks { // close(tasks)关闭for loop
+			for _ = range tasks {
+				// close(tasks)关闭for loop
 
 			}
 		}()
@@ -106,7 +107,7 @@ func (s *NonBlockSession) Serve(d Dispatcher, maxPipeline int) {
 		}
 
 		wait.Add(1)
-		go func() {
+		go func(r*Request) {
 			// 异步执行(直接通过goroutine来调度，因为: SessionNonBlock中的不同的Request相互独立)
 
 			_ = s.handleRequest(r, d)
@@ -122,7 +123,7 @@ func (s *NonBlockSession) Serve(d Dispatcher, maxPipeline int) {
 			//				log.Printf("Time RT: %.3fms", float64(microseconds()-r.Start)*0.001)
 			//			}
 
-		}()
+		}(r)
 	}
 	// 等待go func执行完毕
 	wait.Wait()
@@ -184,7 +185,7 @@ func (s *NonBlockSession) handleResponse(r *Request) {
 		r.Response.Data = GetThriftException(r, "nonblock_session")
 	}
 
-	incrOpStats(r.Request.Name, microseconds()-r.Start)
+	incrOpStats(r.Request.Name, microseconds() - r.Start)
 }
 
 // 处理来自Client的请求
