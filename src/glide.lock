@@ -1,5 +1,5 @@
-hash: e79d2927d6437eef78ebc9dcaf076dd63208cb9ab3def5d7bbc6ea2bad718c78
-updated: 2017-07-06T10:19:52.99220665+08:00
+hash: 547eec29f366ff270f84c572d263c3548eb9adc795f4a75c3d2e6c63732c1dda
+updated: 2017-10-09T11:31:39.505567117+08:00
 imports:
 - name: github.com/c4pt0r/cfg
   version: 429e6985f0b07bceaa33b57ee612fbca4797a9a6
@@ -44,15 +44,19 @@ imports:
   subpackages:
   - zk
 - name: github.com/wfxiang08/go_thrift
-  version: a20c9e7b36a5ce2ff784c397d0e9b85b55b496c7
+  version: 96149a376920afc9acf82e69177d06b7d66f88d6
   subpackages:
   - thrift
 - name: github.com/wfxiang08/thrift_rpc_base
-  version: ea90195d180d3280bec0eccd3d08dc74f1761972
+  version: d0a731c06159d6573328569480469d668d3eef2d
   subpackages:
-  - rpcthrift/services
   - rpc_utils
+  - rpcthrift/services
   - zkhelper
+- name: golang.org/x/net
+  version: b400c2eff1badec7022a8c8f5bea058b6315eed7
+  subpackages:
+  - context
 - name: golang.org/x/sys
   version: e24f485414aeafb646f6fca458b0bf869c0880a1
   repo: https://go.googlesource.com/sys

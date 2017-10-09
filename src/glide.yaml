@@ -14,7 +14,3 @@ import:
 - package: github.com/wfxiang08/go-zookeeper
   subpackages:
   - zk
-testImport:
-- package: github.com/stretchr/testify
-  subpackages:
-  - assert

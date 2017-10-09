@@ -47,3 +47,8 @@ func (p *TMemoryBuffer) Close() error {
 func (p *TMemoryBuffer) Flush() error {
 	return nil
 }
+
+
+func (p *TMemoryBuffer) RemainingBytes() (num_bytes uint64) {
+	return uint64(p.Buffer.Len())
+}
